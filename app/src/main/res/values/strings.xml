@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Dnscrypt-AndroidClient</string>
+    <string name="app_desc">Protect your DNS traffic from prying eyes</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="LOG"><u>Log: </u></string>
+    <string name="port_number">Port number: </string>
+    <string name="set">Set</string>
+    <string name="local">Local</string>
+    <string name="remote">Remote</string>
+    <string name="select_servers">Select Servers</string>
+    <string name="selected_servers_num">Selected servers:</string>
+    <string name="auto_start">Auto start</string>
+    <string name="Desc_tab1_imageView1">Show status of service</string>
+</resources>
