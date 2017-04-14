@@ -22,7 +22,8 @@
         </activity>
         <service android:name="namcap.dnscryptAndroidclient.DnscryptService"
             android:exported="false"
-            android:description="@string/app_desc"/>
+            android:description="@string/app_desc"
+            android:stopWithTask="false"/>
         <receiver android:name="namcap.dnscryptAndroidclient.BootCompleteReceiver" android:enabled="true" android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

@@ -10,7 +10,6 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,9 +45,11 @@ public class DnscryptService extends Service {
         if (! running) {
             this.stopSelf();
         }
+        else {
+            //Start foreground
+            startForeground(NOTIFICATION_CODE,getNotification());
+        }
         sendMsg(Constants.SERVICE_STATUS_EVENT,Constants.SERVICE_STATUS_EVENT_NEW_STATUS,running);
-        //Foreground
-        startForeground(NOTIFICATION_CODE,getNotification());
         return Service.START_STICKY;
     }
 
@@ -89,11 +90,19 @@ public class DnscryptService extends Service {
     }
 
     @Override
+    public void onTaskRemoved(Intent intent) {
+        super.onTaskRemoved(intent);
+        Runtime.getRuntime().gc();
+        Runtime.getRuntime().gc();
+    }
+
+    @Override
     public void onDestroy(){
         //Stop service
         if (workerThread != null) {
             workerThread.keepRunning=false;
             workerThread.interrupt();
+            if (workerThread.process!=null) workerThread.process.destroy();
             try {
                 workerThread.join();
             } catch (InterruptedException e) {
@@ -114,7 +123,6 @@ public class DnscryptService extends Service {
         private final int port;
         private final int INTERVAL_BETWEEN_RETRIES_MS=1000;
         private final int INTERNAL_BETWEEN_CHECKING_LOG=20;
-        private final int log_maxLines=200;
         volatile boolean keepRunning=true;
         private Process process=null;
         private BufferedReader bufferedReader=null;
@@ -127,6 +135,7 @@ public class DnscryptService extends Service {
         public void run() {
             String line;
             boolean bin_running;
+            int loop_cnt=0;
             try {
                 while (keepRunning) {
                     //Loop through servers
@@ -134,6 +143,14 @@ public class DnscryptService extends Service {
                         if (! keepRunning)
                             break;
                         try {
+                            if (9<=loop_cnt) {
+                                Runtime.getRuntime().gc();
+                                loop_cnt=0;
+                            }
+                            else {
+                                loop_cnt+=1;
+                            }
+                            sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"Connecting to server "+i+"\n");
                             //Start dnscrypt binary in a separate process
                             process=new ProcessBuilder()
                                     .command("/system/xbin/dnscrypt-proxy",
@@ -156,10 +173,10 @@ public class DnscryptService extends Service {
                                     //Process still running
                                     //Empty block here
                                 }
-                                while (bufferedReader.ready()) {
+                                do {
                                     line=bufferedReader.readLine();
                                     sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,line+"\n");
-                                }
+                                } while (bufferedReader.ready());
                                 Thread.sleep(INTERNAL_BETWEEN_CHECKING_LOG);
                             }
                             bufferedReader.close();
