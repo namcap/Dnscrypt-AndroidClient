@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created on 3/11/2017.
@@ -123,6 +124,7 @@ public class DnscryptService extends Service {
         private final int port;
         private final int INTERVAL_BETWEEN_RETRIES_MS=1000;
         private final int INTERNAL_BETWEEN_CHECKING_LOG=20;
+        private final Random rnd=new Random();
         volatile boolean keepRunning=true;
         private Process process=null;
         private BufferedReader bufferedReader=null;
@@ -136,57 +138,56 @@ public class DnscryptService extends Service {
             String line;
             boolean bin_running;
             int loop_cnt=0;
+            String i;
             try {
                 while (keepRunning) {
-                    //Loop through servers
-                    for (String i : servers) {
-                        if (! keepRunning)
-                            break;
-                        try {
-                            if (9<=loop_cnt) {
-                                Runtime.getRuntime().gc();
-                                loop_cnt=0;
-                            }
-                            else {
-                                loop_cnt+=1;
-                            }
-                            sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"Connecting to server "+i+"\n");
-                            //Start dnscrypt binary in a separate process
-                            process=new ProcessBuilder()
-                                    .command("/system/xbin/dnscrypt-proxy",
-                                            "--loglevel=3",
-                                            "--resolvers-list="+Constants.CSV_FILE,
-                                            "--local-address=127.0.0.1:"+port,
-                                            "--resolver-name="+i)
-                                    .redirectErrorStream(true)
-                                    .start();
-                            bufferedReader=new BufferedReader(new InputStreamReader(process.getInputStream()));
-                            //Obtain output from process and forward it to log
-                            bin_running=true;
-                            while (keepRunning && bin_running) {
-                                //Loop will continue as long as binary and Service are still running
-                                try{
-                                    process.exitValue();
-                                    //Process has been terminated
-                                    bin_running=false;
-                                } catch (IllegalThreadStateException e){
-                                    //Process still running
-                                    //Empty block here
-                                }
-                                do {
-                                    line=bufferedReader.readLine();
-                                    sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,line+"\n");
-                                } while (bufferedReader.ready());
-                                Thread.sleep(INTERNAL_BETWEEN_CHECKING_LOG);
-                            }
-                            bufferedReader.close();
-                            //Add a newline to separate output from different runs
-                            sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"\n");
-                        } catch (IOException e) {
-                            sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,e.toString()+"\n");
+                    i=servers.get(rnd.nextInt(servers.size()));
+                    if (! keepRunning)
+                        break;
+                    try {
+                        if (9<=loop_cnt) {
+                            Runtime.getRuntime().gc();
+                            loop_cnt=0;
                         }
-                        Thread.sleep(INTERVAL_BETWEEN_RETRIES_MS);
+                        else {
+                            loop_cnt+=1;
+                        }
+                        sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"Connecting to server "+i+"\n");
+                        //Start dnscrypt binary in a separate process
+                        process=new ProcessBuilder()
+                                .command("/system/xbin/dnscrypt-proxy",
+                                        "--loglevel=3",
+                                        "--resolvers-list="+Constants.CSV_FILE,
+                                        "--local-address=127.0.0.1:"+port,
+                                        "--resolver-name="+i)
+                                .redirectErrorStream(true)
+                                .start();
+                        bufferedReader=new BufferedReader(new InputStreamReader(process.getInputStream()));
+                        //Obtain output from process and forward it to log
+                        bin_running=true;
+                        while (keepRunning && bin_running) {
+                            //Loop will continue as long as binary and Service are still running
+                            try{
+                                process.exitValue();
+                                //Process has been terminated
+                                bin_running=false;
+                            } catch (IllegalThreadStateException e){
+                                //Process still running
+                                //Empty block here
+                            }
+                            do {
+                                line=bufferedReader.readLine();
+                                sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,line+"\n");
+                            } while (bufferedReader.ready());
+                            Thread.sleep(INTERNAL_BETWEEN_CHECKING_LOG);
+                        }
+                        bufferedReader.close();
+                        //Add a newline to separate output from different runs
+                        sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"\n");
+                    } catch (IOException e) {
+                        sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,e.toString()+"\n");
                     }
+                    Thread.sleep(INTERVAL_BETWEEN_RETRIES_MS);
                 }
             } catch (InterruptedException e) {
                 //Break out of loops on interrupted
