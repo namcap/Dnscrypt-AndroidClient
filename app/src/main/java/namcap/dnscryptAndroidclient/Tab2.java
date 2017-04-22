@@ -48,6 +48,12 @@ public class Tab2 extends Fragment {
             checkBox.setChecked(DataBucket.autoStart);
         }
 
+        //Restore ephemeral_keys
+        checkBox=(CheckBox)view.findViewById(R.id.tab2_checkBox2);
+        if (checkBox != null) {
+            checkBox.setChecked(DataBucket.ephemeral_keys);
+        }
+
         return view;
     }
 

@@ -17,6 +17,7 @@ class Constants {
     static final String PREF_PORT="port";
     static final String PREF_SERVERS="selected_servers";
     static final String PREF_AUTOSTART="auto_start";
+    static final String PREF_EPHEMERAL_KEYS="ephemeral_keys";
     static final String CSV_FILE="/etc/dnscrypt-proxy/dnscrypt-resolvers.csv";
     //static final String CSV_FILE= Environment.getExternalStorageDirectory().getAbsolutePath()+"/dnscrypt-resolvers.csv"; //Debug
     static final String[] CSV_FIELD={"Name","DNSSEC validation","No logs","Namecoin"};

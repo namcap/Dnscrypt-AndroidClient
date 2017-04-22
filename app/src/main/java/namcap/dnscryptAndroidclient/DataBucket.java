@@ -14,6 +14,7 @@ class DataBucket {
 
     static int portSelected;
     static boolean autoStart;
+    static boolean ephemeral_keys;
 
     static final StringBuilder serviceLogBuilder=new StringBuilder();
 

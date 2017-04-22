@@ -11,5 +11,7 @@
     <string name="select_servers">Select Servers</string>
     <string name="selected_servers_num">Selected servers:</string>
     <string name="auto_start">Auto start</string>
+    <string name="ephemeral_keys">Ephemeral keys</string>
     <string name="Desc_tab1_imageView1">Show status of service</string>
+    <string name="ok">OK</string>
 </resources>

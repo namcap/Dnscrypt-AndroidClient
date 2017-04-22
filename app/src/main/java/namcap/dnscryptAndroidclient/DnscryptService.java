@@ -12,7 +12,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -31,12 +34,13 @@ public class DnscryptService extends Service {
         if (! running && intent!=null) {
             ArrayList<String> servers = new ArrayList<>(DataBucket.getServers());
             int port = DataBucket.portSelected;
+            boolean ephemeral_keys=DataBucket.ephemeral_keys;
             if (!servers.isEmpty() && 1024 <= port && port <= 65535) {
                 Toast.makeText(this, "Starting " + name, Toast.LENGTH_SHORT).show();
                 //Clear log
                 sendMsg(Constants.SERVICE_LOG_EVENT, Constants.SERVICE_LOG_EVENT_CLEAR, true);
                 //Start service
-                workerThread = new WorkerThread(servers, port);
+                workerThread = new WorkerThread(servers, port, ephemeral_keys);
                 workerThread.start();
 
                 //Set running flag
@@ -124,14 +128,16 @@ public class DnscryptService extends Service {
         private final int port;
         private final int INTERVAL_BETWEEN_RETRIES_MS=1000;
         private final int INTERNAL_BETWEEN_CHECKING_LOG=20;
+        private final boolean ephemeral_keys;
         private final Random rnd=new Random();
         volatile boolean keepRunning=true;
         private Process process=null;
         private BufferedReader bufferedReader=null;
 
-        private WorkerThread(ArrayList<String> servers,int port) {
+        private WorkerThread(ArrayList<String> servers,int port,boolean ephemeral_keys) {
             this.servers = servers;
             this.port = port;
+            this.ephemeral_keys=ephemeral_keys;
         }
 
         public void run() {
@@ -139,6 +145,16 @@ public class DnscryptService extends Service {
             boolean bin_running;
             int loop_cnt=0;
             String i;
+            ArrayList<String> command=new ArrayList<>(Arrays.asList(
+                    "/system/xbin/dnscrypt-proxy",
+                    "--loglevel=3",
+                    "--resolvers-list="+Constants.CSV_FILE,
+                    "--local-address=127.0.0.1:"+port,
+                    "--resolver-name="
+            ));
+            if (ephemeral_keys) {
+                command.add("--ephemeral-keys");
+            }
             try {
                 while (keepRunning) {
                     i=servers.get(rnd.nextInt(servers.size()));
@@ -154,12 +170,9 @@ public class DnscryptService extends Service {
                         }
                         sendMsg(Constants.SERVICE_LOG_EVENT,Constants.SERVICE_LOG_EVENT_APPEND,"Connecting to server "+i+"\n");
                         //Start dnscrypt binary in a separate process
+                        command.set(4,"--resolver-name="+i);
                         process=new ProcessBuilder()
-                                .command("/system/xbin/dnscrypt-proxy",
-                                        "--loglevel=3",
-                                        "--resolvers-list="+Constants.CSV_FILE,
-                                        "--local-address=127.0.0.1:"+port,
-                                        "--resolver-name="+i)
+                                .command(command)
                                 .redirectErrorStream(true)
                                 .start();
                         bufferedReader=new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -129,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences settings=getSharedPreferences(Constants.PREF_FNAME,MODE_PRIVATE);
         DataBucket.autoStart=settings.getBoolean(Constants.PREF_AUTOSTART,true);
         DataBucket.portSelected=settings.getInt(Constants.PREF_PORT,Constants.INIT_SELECTED_PORT);
+        DataBucket.ephemeral_keys=settings.getBoolean(Constants.PREF_EPHEMERAL_KEYS,false);
         Set<String> serv=settings.getStringSet(Constants.PREF_SERVERS,null);
         if (serv != null) {
             serverSelected.clear();
@@ -186,6 +187,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tab2_checkBox1:
                 //Checkbox: Auto start
                 DataBucket.autoStart=((CheckBox)v).isChecked();
+                break;
+            case R.id.tab2_checkBox2:
+                //Checkbox: Ephemeral keys
+                DataBucket.ephemeral_keys=((CheckBox)v).isChecked();
+                if (DataBucket.ephemeral_keys) {
+                    new AlertDialog.Builder(this)
+                            .setTitle("Alert")
+                            .setMessage("This mitigates server logging by generating an ephemeral key pair for each query.\n\n" +
+                                    "But this may be slow, especially on non-Intel CPUs.")
+                            .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                }
+                            })
+                            .show();
+                }
                 break;
             default:
                 break;
@@ -261,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SharedPreferences settings=getSharedPreferences(Constants.PREF_FNAME,MODE_PRIVATE);
         SharedPreferences.Editor editor=settings.edit();
         editor.putBoolean(Constants.PREF_AUTOSTART,DataBucket.autoStart);
+        editor.putBoolean(Constants.PREF_EPHEMERAL_KEYS,DataBucket.ephemeral_keys);
         editor.putInt(Constants.PREF_PORT,DataBucket.portSelected);
         Set<String> servers=new HashSet<>(DataBucket.getServers());
         editor.putStringSet(Constants.PREF_SERVERS,servers);

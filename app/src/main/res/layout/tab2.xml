@@ -57,6 +57,13 @@
             android:onClick="onClick"
             android:text="@string/auto_start" />
 
+        <CheckBox
+            android:id="@+id/tab2_checkBox2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:text="@string/ephemeral_keys" />
+
         <TextView
             style="?android:listSeparatorTextViewStyle"
             android:layout_width="match_parent"
