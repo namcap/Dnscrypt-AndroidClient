@@ -23,12 +23,14 @@ public class BootCompleteReceiver extends BroadcastReceiver {
                 return;
             }
 
+            //Restore settings
             ArrayList<String> servers = DataBucket.getServers();
             Set<String> serv = sharedPreferences.getStringSet(Constants.PREF_SERVERS, null);
             if (serv != null) {
                 servers.addAll(serv);
                 if (!servers.isEmpty()) {
                     DataBucket.portSelected = sharedPreferences.getInt(Constants.PREF_PORT, Constants.INIT_SELECTED_PORT);
+                    DataBucket.ephemeral_keys = sharedPreferences.getBoolean(Constants.PREF_EPHEMERAL_KEYS,false);
                     //Start service
                     Intent mIntent = new Intent(context, DnscryptService.class);
                     context.startService(mIntent);
