@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--Strings for android:key here should match those in class Constants-->
+    <PreferenceCategory
+        android:title="@string/local">
+
+        <EditTextPreference
+            android:key="pref_port"
+            android:title="@string/pref_port_title"
+            android:summary="@string/pref_port_summary"
+            android:defaultValue="1024"
+            android:inputType="number"/>
+
+        <ListPreference
+            android:key="pref_log_level"
+            android:title="@string/pref_log_level_title"
+            android:summary="@string/pref_log_level_summary"
+            android:defaultValue="3"
+            android:entries="@array/List_log_levels"
+            android:entryValues="@array/value_log_levels"/>
+
+        <CheckBoxPreference
+            android:key="pref_auto_start"
+            android:title="@string/pref_auto_start_title"
+            android:summary="@string/pref_auto_start_summary"
+            android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="pref_ephemeral_keys"
+            android:title="@string/pref_ephemeral_key_title"
+            android:summary="@string/pref_ephemeral_key_summary"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/remote">
+
+        <Preference
+            android:key="dummy_pref_sel_serv"
+            android:title="@string/pref_sel_serv_title"
+            android:summary="@string/pref_sel_serv_summary"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

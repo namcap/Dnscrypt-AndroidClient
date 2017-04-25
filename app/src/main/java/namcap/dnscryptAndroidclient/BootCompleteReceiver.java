@@ -4,8 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 /**
@@ -17,19 +17,25 @@ public class BootCompleteReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-            SharedPreferences sharedPreferences = context.getSharedPreferences(Constants.PREF_FNAME, Context.MODE_PRIVATE);
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
             if (!sharedPreferences.getBoolean(Constants.PREF_AUTOSTART, false)) {
                 return;
             }
 
             //Restore settings
-            ArrayList<String> servers = DataBucket.getServers();
-            Set<String> serv = sharedPreferences.getStringSet(Constants.PREF_SERVERS, null);
+            Set<String> serv = sharedPreferences.getStringSet(Constants.SETTING_SERVERS, null);
             if (serv != null) {
-                servers.addAll(serv);
-                if (!servers.isEmpty()) {
-                    DataBucket.portSelected = sharedPreferences.getInt(Constants.PREF_PORT, Constants.INIT_SELECTED_PORT);
+                DataBucket.servers.addAll(serv);
+                if (!DataBucket.servers.isEmpty()) {
+                    try {
+                        DataBucket.portSelected = Integer.parseInt(
+                                sharedPreferences.getString(Constants.PREF_PORT,String.valueOf(Constants.INIT_SELECTED_PORT))
+                    );
+                    } catch (NumberFormatException e) {
+                        return;
+                    }
+                    DataBucket.logLevel = sharedPreferences.getString(Constants.PREF_LOG_LEVEL,Constants.DEFAULT_LOG_LEVEL).charAt(0);
                     DataBucket.ephemeral_keys = sharedPreferences.getBoolean(Constants.PREF_EPHEMERAL_KEYS,false);
                     //Start service
                     Intent mIntent = new Intent(context, DnscryptService.class);

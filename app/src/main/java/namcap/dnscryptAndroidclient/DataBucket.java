@@ -7,15 +7,12 @@ import java.util.ArrayList;
  */
 
 class DataBucket {
-    private final static ArrayList<String> servers=new ArrayList<>();
-    static ArrayList<String> getServers() {
-        return servers;
-    }
+    final static ArrayList<String> servers=new ArrayList<>();
 
+    //A list of all available servers
+    static ArrayList<String[]> server_list=null;
     static int portSelected;
-    static boolean autoStart;
+    static Character logLevel;
     static boolean ephemeral_keys;
-
-    static final StringBuilder serviceLogBuilder=new StringBuilder();
 
 }

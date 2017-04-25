@@ -4,14 +4,19 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="LOG"><u>Log: </u></string>
-    <string name="port_number">Port number: </string>
-    <string name="set">Set</string>
+    <string name="pref_port_title">Port</string>
+    <string name="pref_port_summary">Listen to 127.0.0.1:</string>
+    <string name="pref_log_level_title">Log Level</string>
+    <string name="pref_log_level_summary">Current:</string>
+    <string name="pref_auto_start_title">Auto Start</string>
+    <string name="pref_auto_start_summary">If checked service will start on boot</string>
+    <string name="pref_ephemeral_key_title">Ephemeral Keys</string>
+    <string name="pref_ephemeral_key_summary">If checked, an ephemeral key pair will be generated for each query</string>
+    <string name="pref_sel_serv_title">Select Servers</string>
+    <string name="pref_sel_serv_summary">Selected servers:</string>
     <string name="local">Local</string>
     <string name="remote">Remote</string>
-    <string name="select_servers">Select Servers</string>
-    <string name="selected_servers_num">Selected servers:</string>
-    <string name="auto_start">Auto start</string>
-    <string name="ephemeral_keys">Ephemeral keys</string>
     <string name="Desc_tab1_imageView1">Show status of service</string>
     <string name="ok">OK</string>
+    <string name="alert_ephemeral_keys_msg">Enabling this option helps mitigating server logging by generating an ephemeral key pair for each query.\n\nBut this may be slow, especially on non-Intel CPUs.</string>
 </resources>

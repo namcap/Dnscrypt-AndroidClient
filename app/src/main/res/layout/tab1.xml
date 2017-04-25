@@ -17,7 +17,6 @@
     <Button
         android:id="@+id/tab1_button1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:onClick="onClick" />
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

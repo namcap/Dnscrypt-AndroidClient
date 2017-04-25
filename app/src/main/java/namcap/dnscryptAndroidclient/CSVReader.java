@@ -33,11 +33,10 @@ class CSVReader {
     }
 
     static ArrayList<String[]> getData(String filename,int skipLines,@Nullable final ArrayList<Integer> filter) throws FileNotFoundException {
-        ArrayList<String[]> data=new ArrayList<>();
+        ArrayList<String[]> ret=new ArrayList<>();
         Scanner scanner=null;
         String[] row;
         ArrayList<String> rowBuilder=new ArrayList<>();
-
         try {
             scanner=new Scanner(new FileReader(filename));
             while (0<skipLines) {
@@ -56,7 +55,7 @@ class CSVReader {
                     for (String i : row) {
                         rowBuilder.add(i.trim());
                     }
-                    data.add(rowBuilder.toArray(new String[0]));
+                    ret.add(rowBuilder.toArray(new String[0]));
                 }
             }
             else {
@@ -68,7 +67,7 @@ class CSVReader {
                             rowBuilder.add(row[i].trim());
                         }
                     }
-                    data.add(rowBuilder.toArray(new String[0]));
+                    ret.add(rowBuilder.toArray(new String[0]));
                 }
             }
         } finally {
@@ -77,7 +76,7 @@ class CSVReader {
             }
         }
 
-        return data;
+        return ret;
     }
 
     private static String[] split(String str) {
