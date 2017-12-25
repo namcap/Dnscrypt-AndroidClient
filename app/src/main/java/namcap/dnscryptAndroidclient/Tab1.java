@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
@@ -19,9 +21,17 @@ import android.widget.ImageView;
 
 public class Tab1 extends Fragment {
 
+    private Bitmap bmp_lock;
+    private Bitmap bmp_broken_lock;
+
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
+        //Decode images
+
+        bmp_lock= BitmapFactory.decodeResource(getResources(),R.drawable.lock);
+        bmp_broken_lock= BitmapFactory.decodeResource(getResources(),R.drawable.broken_lock);
 
         //Register LocalBroadcastReceiver
         //Don't forget to unregister in onDestroy()
@@ -36,7 +46,7 @@ public class Tab1 extends Fragment {
         View view=inflater.inflate(R.layout.tab1,container,false);
         boolean serviceIsRunning=DnscryptService.isRunning();
         //Set up tab1_button1
-        final Button btn=(Button) view.findViewById(R.id.tab1_button1);
+        final Button btn=view.findViewById(R.id.tab1_button1);
         if (btn!=null){
             if (serviceIsRunning) {
                 btn.setText(R.string.stop);
@@ -58,15 +68,7 @@ public class Tab1 extends Fragment {
             });
         }
         //Set up tab1_imageView1
-        ImageView img=(ImageView) view.findViewById(R.id.tab1_imageView1);
-        if (img!=null) {
-            if (serviceIsRunning) {
-                img.setImageResource(R.drawable.lock);
-            }
-            else {
-                img.setImageResource(R.drawable.broken_lock);
-            }
-        }
+        setImage(view, serviceIsRunning);
         return view;
     }
 
@@ -81,6 +83,18 @@ public class Tab1 extends Fragment {
         Context context=getActivity().getApplicationContext();
         Intent mIntent=new Intent(context,DnscryptService.class);
         context.stopService(mIntent);
+    }
+
+    private void setImage(final View view, final boolean serviceIsRunning) {
+        ImageView imageView = view.findViewById(R.id.tab1_imageView1);
+        if (imageView != null) {
+            if (serviceIsRunning) {
+                imageView.setImageBitmap(bmp_lock);
+            }
+            else {
+                imageView.setImageBitmap(bmp_broken_lock);
+            }
+        }
     }
 
     @Override
@@ -98,11 +112,12 @@ public class Tab1 extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             View view=getView();
-            if (view != null) {
-                boolean serviceRunning = intent.getExtras().getBoolean(Constants.SERVICE_STATUS_EVENT_NEW_STATUS);
-                Button btn = (Button)view.findViewById(R.id.tab1_button1);
+            Bundle extras=intent.getExtras();
+            if (view != null && extras != null) {
+                boolean serviceIsRunning = extras.getBoolean(Constants.SERVICE_STATUS_EVENT_NEW_STATUS);
+                Button btn = view.findViewById(R.id.tab1_button1);
                 if (btn != null) {
-                    if (serviceRunning) {
+                    if (serviceIsRunning) {
                         btn.setText(R.string.stop);
                     }
                     else {
@@ -110,15 +125,7 @@ public class Tab1 extends Fragment {
                     }
                     btn.setEnabled(true);
                 }
-                ImageView imageView = (ImageView)view.findViewById(R.id.tab1_imageView1);
-                if (imageView != null) {
-                    if (serviceRunning) {
-                        imageView.setImageResource(R.drawable.lock);
-                    }
-                    else {
-                        imageView.setImageResource(R.drawable.broken_lock);
-                    }
-                }
+                setImage(view, serviceIsRunning);
             }
         }
     };

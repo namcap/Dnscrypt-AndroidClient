@@ -16,7 +16,9 @@ public class BootCompleteReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
+        String action=intent.getAction();
+        if (action == null) return;
+        if (action.equals("android.intent.action.BOOT_COMPLETED")) {
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
             if (!sharedPreferences.getBoolean(Constants.PREF_AUTOSTART, false)) {
@@ -24,6 +26,7 @@ public class BootCompleteReceiver extends BroadcastReceiver {
             }
 
             //Restore settings
+            DataBucket.data_dir = context.getFilesDir().toString();
             Set<String> serv = sharedPreferences.getStringSet(Constants.SETTING_SERVERS, null);
             if (serv != null) {
                 DataBucket.servers.addAll(serv);

@@ -7,7 +7,10 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -83,14 +86,22 @@ public class Tab2 extends PreferenceFragment {
                         if (view != null) {
                             new AlertDialog.Builder(view.getContext())
                                     .setMessage(R.string.alert_ephemeral_keys_msg)
-                                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener(){
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                        }
-                                    })
+                                    .setPositiveButton(R.string.ok, null)
                                     .show();
                         }
                     }
+                    return true;
+                }
+            });
+        }
+
+        pref=findPreference(Constants.PREF_IMPORT_SERVER_LIST);
+        if (pref != null) {
+            pref.setSummary(getString(R.string.pref_import_serv_summary)+Constants.CSV_FILE_SDCARD);
+            pref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    showImportServerListConfirmDialog();
                     return true;
                 }
             });
@@ -163,10 +174,59 @@ public class Tab2 extends PreferenceFragment {
         }
     }
 
+    private void showImportServerListConfirmDialog() {
+        View view = getView();
+        if (view != null) {
+            new AlertDialog.Builder(view.getContext())
+                    .setMessage(R.string.alert_import_server_list)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            importServerList();
+                            updateServerSelectSummary();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, null)
+                    .show();
+        }
+    }
+
     private void updateServerSelectSummary() {
         Preference pref=findPreference(Constants.PREF_SELECT_SERVER);
         if (pref != null) {
             pref.setSummary(getString(R.string.pref_sel_serv_summary)+serverSelected.size());
+        }
+    }
+
+    private void importServerList() {
+        final String CSV_DATA = DataBucket.data_dir + Constants.CSV_FILE;
+        File csvFile_data = new File(CSV_DATA);
+        View view = getView();
+        if (Constants.CSV_FILE_SIZE_LIMIT_BYTE < csvFile_data.length()) {
+            // Prevent copying large file
+            if (view != null) {
+                Toast.makeText(view.getContext(),
+                        Constants.CSV_FILE_SDCARD+
+                                " exceeds "+
+                                Integer.toString(Constants.CSV_FILE_SIZE_LIMIT_BYTE)+" bytes",
+                        Toast.LENGTH_LONG).show();
+            }
+            return;
+        }
+        try {
+            MainActivity.copyFile(Constants.CSV_FILE_SDCARD, CSV_DATA);
+            DataBucket.server_list = MainActivity.parseServerList(CSV_DATA);
+            MainActivity.updateServerSelection();
+            serverSelectDialogList=null;
+            if (view != null) {
+                Toast.makeText(view.getContext(),
+                        Constants.CSV_FILE_SDCARD+" has been imported",
+                        Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            if (view != null) {
+                Toast.makeText(view.getContext(),e.toString(),Toast.LENGTH_LONG).show();
+            }
         }
     }
 

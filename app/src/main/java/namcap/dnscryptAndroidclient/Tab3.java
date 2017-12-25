@@ -34,7 +34,7 @@ public class Tab3 extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View view=inflater.inflate(R.layout.tab3,container,false);
-        TextView textView=(TextView) view.findViewById(R.id.log);
+        TextView textView=view.findViewById(R.id.log);
         if (textView!=null) {
             textView.setMovementMethod(new ScrollingMovementMethod());
         }
@@ -57,7 +57,7 @@ public class Tab3 extends Fragment {
         public void onReceive(Context context, Intent intent) {
             View view=getView();
             if (view != null) {
-                TextView textView = (TextView)view.findViewById(R.id.log);
+                TextView textView = view.findViewById(R.id.log);
                 if (textView != null) {
                     Bundle bundle=intent.getExtras();
                     if (bundle != null) {

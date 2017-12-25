@@ -38,6 +38,11 @@
         android:title="@string/remote">
 
         <Preference
+            android:key="dummy_pref_import_serv"
+            android:title="@string/pref_import_serv_title"
+            android:summary="@string/pref_import_serv_summary"/>
+
+        <Preference
             android:key="dummy_pref_sel_serv"
             android:title="@string/pref_sel_serv_title"
             android:summary="@string/pref_sel_serv_summary"/>

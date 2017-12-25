@@ -14,7 +14,7 @@ import java.util.Scanner;
 
 class CSVReader {
 
-    static ArrayList<String> getFieldName(String filename) throws FileNotFoundException {
+    static ArrayList<String> getFieldName(final String filename) throws FileNotFoundException {
         ArrayList<String> fields=new ArrayList<>();
         Scanner scanner=null;
 
@@ -32,7 +32,7 @@ class CSVReader {
         return fields;
     }
 
-    static ArrayList<String[]> getData(String filename,int skipLines,@Nullable final ArrayList<Integer> filter) throws FileNotFoundException {
+    static ArrayList<String[]> getData(final String filename, int skipLines,@Nullable final ArrayList<Integer> filter) throws FileNotFoundException {
         ArrayList<String[]> ret=new ArrayList<>();
         Scanner scanner=null;
         String[] row;
@@ -79,7 +79,7 @@ class CSVReader {
         return ret;
     }
 
-    private static String[] split(String str) {
+    private static String[] split(final String str) {
         ArrayList<String> tokens=new ArrayList<>();
         boolean quoted=false;
 

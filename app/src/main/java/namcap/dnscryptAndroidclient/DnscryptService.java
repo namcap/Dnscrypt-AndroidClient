@@ -40,7 +40,8 @@ public class DnscryptService extends Service {
                 workerThread = new WorkerThread(servers,
                         port,
                         DataBucket.ephemeral_keys,
-                        DataBucket.logLevel);
+                        DataBucket.logLevel,
+                        DataBucket.data_dir);
                 workerThread.start();
 
                 //Set running flag
@@ -71,7 +72,7 @@ public class DnscryptService extends Service {
     }
 
     private Notification getNotification(){
-        NotificationCompat.Builder builder=new NotificationCompat.Builder(this);
+        NotificationCompat.Builder builder=new NotificationCompat.Builder(this, "default");
 
         Notification notification=builder.build();
         notification.flags |= Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_AUTO_CANCEL;
@@ -129,16 +130,22 @@ public class DnscryptService extends Service {
         private final int INTERVAL_BETWEEN_RETRIES_MS=1000;
         private final int INTERNAL_BETWEEN_CHECKING_LOG=20;
         private final boolean ephemeral_keys;
+        private final String data_dir;
         private final Random rnd=new Random();
         volatile boolean keepRunning=true;
         private Process process=null;
         private BufferedReader bufferedReader=null;
 
-        private WorkerThread(ArrayList<String> servers,int port,boolean ephemeral_keys,Character logLevel) {
+        private WorkerThread(final ArrayList<String> servers,
+                             final int port,
+                             final boolean ephemeral_keys,
+                             final Character logLevel,
+                             final String data_dir) {
             this.servers = servers;
             this.port = port;
             this.ephemeral_keys=ephemeral_keys;
             this.logLevel=logLevel;
+            this.data_dir=data_dir;
         }
 
         public void run() {
@@ -151,7 +158,7 @@ public class DnscryptService extends Service {
             ArrayList<String> cmd_test=new ArrayList<>(Arrays.asList(
                     "/system/xbin/dnscrypt-proxy",
                     "--resolver-name=",
-                    "--resolvers-list="+Constants.CSV_FILE,
+                    "--resolvers-list="+data_dir+Constants.CSV_FILE,
                     "--loglevel="+logLevel,
                     "--test=0" //margin
             ));
@@ -160,7 +167,7 @@ public class DnscryptService extends Service {
                     "/system/xbin/dnscrypt-proxy",
                     "--resolver-name=",
                     "--loglevel="+logLevel,
-                    "--resolvers-list="+Constants.CSV_FILE,
+                    "--resolvers-list="+data_dir+Constants.CSV_FILE,
                     "--local-address=127.0.0.1:"+port
             ));
             if (ephemeral_keys) {

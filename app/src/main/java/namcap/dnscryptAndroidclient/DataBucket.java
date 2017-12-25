@@ -14,5 +14,6 @@ class DataBucket {
     static int portSelected;
     static Character logLevel;
     static boolean ephemeral_keys;
+    static String data_dir;
 
 }

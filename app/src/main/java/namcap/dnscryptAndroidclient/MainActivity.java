@@ -9,7 +9,13 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,24 +33,28 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String[]> server_list;
     //A list of selected servers
     private final ArrayList<String> serverSelected=DataBucket.servers;
-    ///\Make sure only one thread writes to server list
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
         setContentView(R.layout.activity_main);
+
+        final String data_dir = this.getFilesDir().toString();
+        DataBucket.data_dir = data_dir;
+        final String CSV_DATA = data_dir + Constants.CSV_FILE;
+
+        File csvFile_data = new File(CSV_DATA);
+        if (! csvFile_data.exists()) {
+            try {
+                copyFile(Constants.CSV_FILE_SYS, CSV_DATA);
+            } catch (IOException e) {
+                Toast.makeText(this,e.toString(),Toast.LENGTH_LONG).show();
+            }
+        }
 
         //Parse CSV file
         try {
-            ArrayList<String> colName=CSVReader.getFieldName(Constants.CSV_FILE);
-            ArrayList<Integer> filter=new ArrayList<>();
-            int ind;
-            for (String i : Constants.CSV_FIELD) {
-                ind=colName.indexOf(i);
-                if (0<=ind) {
-                    filter.add(ind);
-                }
-            }
-            server_list=CSVReader.getData(Constants.CSV_FILE,1,filter);
+            server_list=parseServerList(CSV_DATA);
         } catch (FileNotFoundException e) {
             Toast.makeText(this,e.toString(),Toast.LENGTH_LONG).show();
             //Empty list
@@ -52,13 +62,16 @@ public class MainActivity extends AppCompatActivity {
         }
         DataBucket.server_list=server_list;
 
+        //Restore preferences
+        restorePreference();
+
         //Add toolbar
-        Toolbar toolbar=(Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         //Initialize tabLayout
         final int tabCnt = 3;
-        tabLayout=(TabLayout) findViewById(R.id.tablayout);
+        tabLayout=findViewById(R.id.tablayout);
         //Add tabs
         tabLayout.addTab(tabLayout.newTab().setText("HOME"));
         tabLayout.addTab(tabLayout.newTab().setText("SETTING"));
@@ -88,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Initialize viewPager
-        viewPager=(ViewPager) findViewById(R.id.viewpager);
+        viewPager=findViewById(R.id.viewpager);
         viewPager.setAdapter(new Pager(getFragmentManager(), tabCnt));
         viewPager.setOffscreenPageLimit(tabCnt -1);
         viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener(){
@@ -100,9 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        //Restore preferences
-        restorePreference();
     }
 
     private void restorePreference() {
@@ -145,16 +155,59 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    static void copyFile(final String src, final String dest) throws IOException {
+        try (InputStream fin = new FileInputStream(src)) {
+            try (OutputStream fout = new FileOutputStream(dest)) {
+                final int BS = 65536;
+                byte[] buf = new byte[BS];
+                int len;
+                while (0 < (len = fin.read(buf))) {
+                    fout.write(buf,0,len);
+                }
+            }
+        }
+    }
+
+    static ArrayList<String[]> parseServerList(final String file) throws FileNotFoundException {
+        ArrayList<String> colName=CSVReader.getFieldName(file);
+        ArrayList<Integer> filter=new ArrayList<>();
+        int ind;
+        for (String i : Constants.CSV_FIELD) {
+            ind=colName.indexOf(i);
+            if (0<=ind) {
+                filter.add(ind);
+            }
+        }
+        return CSVReader.getData(file,1,filter);
+    }
+
+    static void updateServerSelection() {
+        final ArrayList<String> serverSelected = new ArrayList<>(DataBucket.servers);
+        final ArrayList<String[]> server_list = DataBucket.server_list;
+
+        DataBucket.servers.clear();
+        for (String i : serverSelected) {
+            for (String[] k : server_list) {
+                if (k[0].equals(i)) {
+                    DataBucket.servers.add(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        // Clear instance state since it is not used anyway
+        state.clear();
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
 
         savePreferences();
-    }
-
-    @Override
-    protected void onDestroy(){
-        super.onDestroy();
     }
 
 }
