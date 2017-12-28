@@ -37,6 +37,7 @@ class CSVReader {
         Scanner scanner=null;
         String[] row;
         ArrayList<String> rowBuilder=new ArrayList<>();
+        boolean good_row;
         try {
             scanner=new Scanner(new FileReader(filename));
             while (0<skipLines) {
@@ -49,6 +50,7 @@ class CSVReader {
                 --skipLines;
             }
             if (filter==null) {
+                // Keep all the fields
                 while (scanner.hasNextLine()) {
                     rowBuilder.clear();
                     row=split(scanner.nextLine());
@@ -60,14 +62,21 @@ class CSVReader {
             }
             else {
                 while (scanner.hasNextLine()) {
+                    good_row = true;
                     rowBuilder.clear();
                     row=split(scanner.nextLine());
                     for (int i : filter) {
                         if (0 <= i && i < row.length) {
                             rowBuilder.add(row[i].trim());
                         }
+                        else {
+                            // Abandon this line
+                            good_row = false;
+                            break;
+                        }
                     }
-                    ret.add(rowBuilder.toArray(new String[0]));
+                    if (good_row)
+                        ret.add(rowBuilder.toArray(new String[0]));
                 }
             }
         } finally {

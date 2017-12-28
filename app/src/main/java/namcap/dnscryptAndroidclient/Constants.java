@@ -23,11 +23,14 @@ class Constants {
     //Strings PREF_* above should match those in the file preference.xml
     static final String SETTING_SERVERS ="setting_selected_servers";
     static final String CSV_FILE="dnscrypt-resolvers.csv"; // Internal Storage
+    static final String CSV_FILE_TMP="dnscrypt-resolvers.csv.tmp"; // Internal Storage
     static final String CSV_FILE_SYS="/etc/dnscrypt-proxy/dnscrypt-resolvers.csv";
     static final String CSV_FILE_SDCARD= Environment.getExternalStorageDirectory().getAbsolutePath()+"/Download/dnscrypt-resolvers.csv";
-    static final int CSV_FILE_SIZE_LIMIT_BYTE = 102400;
+    static final long CSV_FILE_SIZE_LIMIT_BYTE = 102400;
     static final String[] CSV_FIELD={"Name","DNSSEC validation","No logs","Namecoin"};
     static final int INIT_SELECTED_PORT=1024;
     static final String DEFAULT_LOG_LEVEL="3";
+    static final String MSG_EXCEEDS_FILESIZE_LIMIT = "File size exceeds limit: %d B";
+    static final String MSG_PARSE_CSV_HEADER_FAILED = "Failed to parse the header of the csv file";
 
 }

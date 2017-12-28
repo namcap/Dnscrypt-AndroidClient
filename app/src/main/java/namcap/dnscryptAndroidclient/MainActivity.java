@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -43,20 +44,15 @@ public class MainActivity extends AppCompatActivity {
         DataBucket.data_dir = data_dir;
         final String CSV_DATA = data_dir + Constants.CSV_FILE;
 
-        File csvFile_data = new File(CSV_DATA);
-        if (! csvFile_data.exists()) {
-            try {
-                copyFile(Constants.CSV_FILE_SYS, CSV_DATA);
-            } catch (IOException e) {
-                Toast.makeText(this,e.toString(),Toast.LENGTH_LONG).show();
-            }
-        }
-
-        //Parse CSV file
         try {
+            File csvFile_data = new File(CSV_DATA);
+            if (! csvFile_data.exists()) {
+                copyFile(Constants.CSV_FILE_SYS, CSV_DATA, Constants.CSV_FILE_SIZE_LIMIT_BYTE);
+            }
+            //Parse CSV file
             server_list=parseServerList(CSV_DATA);
-        } catch (FileNotFoundException e) {
-            Toast.makeText(this,e.toString(),Toast.LENGTH_LONG).show();
+        } catch (IOException | IllegalArgumentException e) {
+            Toast.makeText(this,e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
             //Empty list
             server_list=new ArrayList<>();
         }
@@ -155,20 +151,26 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    static void copyFile(final String src, final String dest) throws IOException {
+    static void copyFile(final String src, final String dest, final long size_limit) throws IOException {
         try (InputStream fin = new FileInputStream(src)) {
             try (OutputStream fout = new FileOutputStream(dest)) {
                 final int BS = 65536;
                 byte[] buf = new byte[BS];
                 int len;
+                long bytes_read = 0L;
                 while (0 < (len = fin.read(buf))) {
                     fout.write(buf,0,len);
+                    bytes_read += len;
+                    if (0 < size_limit && size_limit < bytes_read) {
+                        throw new IOException(String.format(Locale.getDefault(), Constants.MSG_EXCEEDS_FILESIZE_LIMIT, size_limit)) ;
+                    }
                 }
             }
         }
     }
 
-    static ArrayList<String[]> parseServerList(final String file) throws FileNotFoundException {
+    static ArrayList<String[]> parseServerList(final String file)
+            throws FileNotFoundException, IllegalArgumentException {
         ArrayList<String> colName=CSVReader.getFieldName(file);
         ArrayList<Integer> filter=new ArrayList<>();
         int ind;
@@ -176,6 +178,9 @@ public class MainActivity extends AppCompatActivity {
             ind=colName.indexOf(i);
             if (0<=ind) {
                 filter.add(ind);
+            }
+            else {
+                throw new IllegalArgumentException(Constants.MSG_PARSE_CSV_HEADER_FAILED);
             }
         }
         return CSVReader.getData(file,1,filter);
@@ -198,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
-        super.onSaveInstanceState(state);
         // Clear instance state since it is not used anyway
         state.clear();
+        super.onSaveInstanceState(state);
     }
 
     @Override

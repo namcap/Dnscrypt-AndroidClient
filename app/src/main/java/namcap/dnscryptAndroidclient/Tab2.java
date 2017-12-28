@@ -9,7 +9,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -20,10 +19,8 @@ import java.util.ArrayList;
 public class Tab2 extends PreferenceFragment {
 
     private final ArrayList<String> serverSelected=DataBucket.servers;
-    //A list of all available servers
-    private ArrayList<String[]> server_list;
-    //A list to be shown in a dialog
-    private CharSequence[] serverSelectDialogList=null;
+    private ArrayList<String[]> server_list; // A full list of servers
+    private CharSequence[] serverSelectDialogList=null; // A list of servers shown in a dialog
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -199,33 +196,25 @@ public class Tab2 extends PreferenceFragment {
     }
 
     private void importServerList() {
+        final String CSV_DATA_TMP = DataBucket.data_dir + Constants.CSV_FILE_TMP;
         final String CSV_DATA = DataBucket.data_dir + Constants.CSV_FILE;
-        File csvFile_data = new File(CSV_DATA);
         View view = getView();
-        if (Constants.CSV_FILE_SIZE_LIMIT_BYTE < csvFile_data.length()) {
-            // Prevent copying large file
-            if (view != null) {
-                Toast.makeText(view.getContext(),
-                        Constants.CSV_FILE_SDCARD+
-                                " exceeds "+
-                                Integer.toString(Constants.CSV_FILE_SIZE_LIMIT_BYTE)+" bytes",
-                        Toast.LENGTH_LONG).show();
-            }
-            return;
-        }
         try {
-            MainActivity.copyFile(Constants.CSV_FILE_SDCARD, CSV_DATA);
-            DataBucket.server_list = MainActivity.parseServerList(CSV_DATA);
+            MainActivity.copyFile(Constants.CSV_FILE_SDCARD, CSV_DATA_TMP, Constants.CSV_FILE_SIZE_LIMIT_BYTE);
+            DataBucket.server_list = MainActivity.parseServerList(CSV_DATA_TMP);
             MainActivity.updateServerSelection();
-            serverSelectDialogList=null;
+            serverSelectDialogList=null; // Let showServerSelectDialog() rebuild the list
+            //Use new csv file
+            MainActivity.copyFile(CSV_DATA_TMP,CSV_DATA,-1);
             if (view != null) {
                 Toast.makeText(view.getContext(),
                         Constants.CSV_FILE_SDCARD+" has been imported",
                         Toast.LENGTH_LONG).show();
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
+            // Bad file
             if (view != null) {
-                Toast.makeText(view.getContext(),e.toString(),Toast.LENGTH_LONG).show();
+                Toast.makeText(view.getContext(), "Import failed:\n"+e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             }
         }
     }
